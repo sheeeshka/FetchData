@@ -1,29 +1,35 @@
 import React from "react";
 import { Box, Button, Typography } from "@mui/material";
-import logo from "./assets/logo.png"; // Import logo.png
-import dawg from "./assets/dawg.png"; // Import dawg.png
+import { useNavigate } from "react-router-dom";
+import logo from "./assets/logo.png"; 
+import dawg from "./assets/dawg.png"; 
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+
   return (
     <Box
       sx={{
-        backgroundColor: "#F7A82D", // Background color from the design
-        height: "100vh", // Full viewport height
-        width: "100vw", // Full viewport width
+        backgroundColor: "#FFF3E0", 
+        minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        padding: 4,
-        overflow: "hidden", // Prevent scrolling
+        alignItems: "flex-start",
+        justifyContent: "flex-start",
+        padding: 3,
+        boxSizing: "border-box",
+        fontFamily: "Poppins, sans-serif",
       }}
     >
-      {/* Logo and Name Section */}
+      {/* Logo Section */}
       <Box
         sx={{
           display: "flex",
-          justifyContent: "flex-start", // Align content to the left
-          alignItems: "center", // Vertically center the items
-          marginBottom: 0, // Remove space below the logo
-          flex: "0 1 auto", // Prevent it from taking too much vertical space
+          alignItems: "center",
+          justifyContent: "flex-start",
+          gap: 1.5,
+          marginBottom: 2,
+          width: "100%",
         }}
       >
         <Box
@@ -31,63 +37,65 @@ const LandingPage = () => {
           src={logo}
           alt="FetchData Logo"
           sx={{
-            width: 80, // Adjust width to make it fit well
-            height: 76,
+            width: 90,
+            height: 80,
           }}
         />
-        
-        {/* FetchData Name */}
         <Typography
           sx={{
-            color: "#FFCC33", // Color of the name
-            fontSize: 48, // Reduce font size for better fit
-            fontFamily: "Baloo", // Custom font family
-            fontWeight: "400", // Font weight for the name
-            wordWrap: "break-word", // Ensure the name wraps properly if needed
-            marginLeft: 2, // Space between logo and the name
+            color: "#FFA726",
+            fontSize: "3rem",
+            fontWeight: "700",
+            fontFamily: "Poppins, sans-serif",
           }}
         >
           FetchData
         </Typography>
       </Box>
 
-      {/* Content Section */}
+      {/* Main Content */}
       <Box
         sx={{
-          flex: 1, // Take up all available vertical space
           display: "flex",
-          flexDirection: { xs: "column", md: "row" }, // Stack items on small screens
-          alignItems: "center",
-          justifyContent: "space-evenly", // Distribute space evenly
-          gap: 2, // Space between description and image
+          flexDirection: { xs: "column", md: "row" },
+          alignItems: "flex-start",
+          gap: 3,
+          width: "100%",
+          maxWidth: "1400px",
         }}
       >
-        {/* Left Side: Text */}
+        {/* Description and Buttons */}
         <Box
           sx={{
-            maxWidth: 600, // Reduced width for the description
-            textAlign: { xs: "center", md: "left" }, // Center text on small screens
-            paddingBottom: { xs: 2, md: 0 }, // Add space at the bottom on small screens
+            textAlign: "left",
+            width: { xs: "100%", md: "80%" },
           }}
         >
+          {/* Title */}
           <Typography
-            variant="h2"
+            variant="h1"
             sx={{
-              fontWeight: "bold",
-              color: "#402E2A", // Dark brown text
-              marginBottom: 2,
-              fontSize: { xs: "1.8rem", sm: "2.2rem", md: "2.5rem" }, // Responsive font size
+              fontWeight: "800",
+              fontSize: { xs: "3rem", md: "4rem" },
+              color: "#4E342E", 
+              lineHeight: "1.2",
+              marginBottom: 3,
+              fontFamily: "Poppins, sans-serif",
             }}
           >
-            Unleash the Power of Your Data.
+            Unleash the Power of Your Data
           </Typography>
+
+          {/* Description */}
           <Typography
             variant="body1"
             sx={{
-              color: "#402E2A",
-              fontSize: { xs: "1rem", sm: "1.1rem", md: "1.2rem" }, // Responsive text size
-              lineHeight: 1.6,
+              fontSize: "1.2rem",
+              color: "#4E342E", 
+              lineHeight: "1.8",
+              width: "90%",
               marginBottom: 3,
+              fontFamily: "Poppins, sans-serif",
             }}
           >
             FetchData makes data analytics simple and fast. Our platform helps
@@ -98,33 +106,55 @@ const LandingPage = () => {
             <br />
             <strong>FetchData — Fetch the answers. Fetch success.</strong>
           </Typography>
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: "#FFD046",
-              color: "#402E2A",
-              fontWeight: "bold",
-              textTransform: "none",
-              padding: "12px 24px",
-              borderRadius: "25px",
-              "&:hover": {
-                backgroundColor: "#FFC12C",
-              },
-            }}
-          >
-            Fetch Now
-          </Button>
+
+          {/* Navigation Buttons */}
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Button
+              variant="contained"
+              onClick={() => navigate("/datapreparation")}
+              sx={{
+                backgroundColor: "#FFB74D", 
+                color: "#4E342E", 
+                fontWeight: "700",
+                textTransform: "none",
+                padding: "12px 32px",
+                borderRadius: "25px",
+                "&:hover": { backgroundColor: "#FFA726" }, 
+              }}
+            >
+              Start with Data Preparation
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => navigate("/visualization")}
+              sx={{
+                borderColor: "#FFB74D", 
+                color: "#FFB74D",
+                fontWeight: "700",
+                textTransform: "none",
+                padding: "12px 32px",
+                borderRadius: "25px",
+                "&:hover": {
+                  backgroundColor: "#FFF8E1", 
+                  borderColor: "#FFA726", 
+                },
+              }}
+            >
+              Go to Visualization
+            </Button>
+          </Box>
         </Box>
 
-        {/* Right Side: Dawg Image */}
+        {/* Dawg Illustration */}
         <Box
           component="img"
           src={dawg}
           alt="Dogs Illustration"
           sx={{
-            width: { xs: 400, sm: 450, md: 500 }, // Adjust image width for responsiveness
+            width: { xs: "100%", md: "45%" },
+            maxWidth: "600px",
             height: "auto",
-            maxWidth: "100%", // Ensure it doesn't overflow
+            marginTop: -15,
           }}
         />
       </Box>

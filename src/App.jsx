@@ -1,15 +1,18 @@
 import React from "react";
-import LandingPage from "./landingpage"; // Import your LandingPage component
-import MainPage from "./mainpage";
-import logo from "./assets/logo.png";  // Import logo.png
-import dawg from "./assets/dawg.png";  // Import dawg.png
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LandingPage from "./landingpage"; 
+import DataPreparationPage from "./datapreparation";
+import VisualizationPage from "./visualization";
 
 const App = () => {
   return (
-    <div>
-      <LandingPage />
-      <MainPage /> {/* Render the LandingPage component */}
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/landingpage" element={<LandingPage />} />
+        <Route path="/datapreparation" element={<DataPreparationPage />} />
+        <Route path="/visualization" element={<VisualizationPage />} />
+      </Routes>
+    </Router>
   );
 };
 

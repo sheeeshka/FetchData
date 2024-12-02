@@ -12,14 +12,14 @@ import {
   TableBody,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import logo from "./assets/logo.png"; // Replace with your logo path
+import logo from "./assets/logo.png"; 
 import BarChartIcon from "@mui/icons-material/BarChart";
 import ShowChartIcon from "@mui/icons-material/ShowChart";
 import RadarIcon from "@mui/icons-material/Radar";
-import PieChartIcon from "@mui/icons-material/PieChart"; // For Pie Chart
-import ScatterPlotIcon from "@mui/icons-material/ScatterPlot"; // To represent Polar Area Chart
+import PieChartIcon from "@mui/icons-material/PieChart";
+import ScatterPlotIcon from "@mui/icons-material/ScatterPlot";
 
-const MainPage = () => {
+const DataPreparationPage = () => {
   const navigate = useNavigate();
   const [selectedVisualization, setSelectedVisualization] = useState("");
   const [file, setFile] = useState(null);
@@ -32,8 +32,13 @@ const MainPage = () => {
     setFile(uploadedFile);
 
     // Simulate parsing CSV headers (replace with actual CSV parsing logic)
-    const headers = ["Column 1", "Column 2", "Column 3"]; // Example headers
+    const headers = ["Column 1", "Column 2", "Column 3"];
     setCsvHeaders(headers);
+  };
+
+  const handleRemoveDuplicates = () => {
+    // Placeholder for removing duplicates logic
+    alert("Duplicates removed successfully!");
   };
 
   const handleUnleashClick = () => {
@@ -49,9 +54,9 @@ const MainPage = () => {
   return (
     <Box
       sx={{
-        backgroundColor: "#FFB84D", // Full background matching landing page theme
+        backgroundColor: "#FFF3E0", 
         minHeight: "100vh",
-        width: "100vw", // Full viewport width
+        width: "100vw",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -83,14 +88,14 @@ const MainPage = () => {
             src={logo}
             alt="FetchData Logo"
             sx={{
-              width: 70, // Smaller logo
+              width: 60,
               height: 60,
             }}
           />
           <Typography
             sx={{
-              color: "#FFD700",
-              fontSize: "2.2rem",
+              color: "#FFB74D", 
+              fontSize: "2rem",
               fontWeight: "700",
             }}
           >
@@ -98,17 +103,17 @@ const MainPage = () => {
           </Typography>
         </Box>
         <Button
-          variant="contained"
+          variant="outlined"
           sx={{
-            backgroundColor: "#FFD700",
-            color: "#4C3C3D",
-            fontWeight: "700",
+            color: "#FFB74D",
+            borderColor: "#FFB74D",
+            fontWeight: "600",
             textTransform: "none",
             padding: "8px 24px",
             borderRadius: "20px",
-            "&:hover": { backgroundColor: "#FFC000" },
+            "&:hover": { backgroundColor: "#FFF3E0" },
           }}
-          onClick={() => navigate("/")}
+          onClick={() => navigate("/landingpage")}
         >
           Back to Landing Page
         </Button>
@@ -122,13 +127,17 @@ const MainPage = () => {
           gap: 4,
           width: "100%",
           maxWidth: "1200px",
+          backgroundColor: "#FFFFFF",
+          borderRadius: "16px",
+          padding: 4,
+          boxShadow: "0px 6px 15px rgba(0, 0, 0, 0.1)",
         }}
       >
-        {/* Left: Upload CSV and Preview Section */}
+        {/* Upload CSV and Preview */}
         <Box
           sx={{
             flex: 1,
-            backgroundColor: "#FFF",
+            backgroundColor: "#FFF8E1",
             borderRadius: "16px",
             padding: 3,
           }}
@@ -137,7 +146,7 @@ const MainPage = () => {
             sx={{
               fontSize: "1.5rem",
               fontWeight: "700",
-              color: "#4C3C3D",
+              color: "#4E342E",
               marginBottom: 2,
             }}
           >
@@ -149,14 +158,14 @@ const MainPage = () => {
             sx={{
               width: "100%",
               textTransform: "none",
-              color: "#4C3C3D",
+              color: "#4E342E",
               fontWeight: "600",
               border: "2px dashed #CCC",
               padding: "12px",
               borderRadius: "12px",
               marginBottom: 3,
               "&:hover": {
-                borderColor: "#FFC000",
+                borderColor: "#FFA726",
                 backgroundColor: "#FFF7E5",
               },
             }}
@@ -172,6 +181,7 @@ const MainPage = () => {
                 border: "1px solid #CCC",
                 borderRadius: "8px",
                 padding: 2,
+                marginBottom: 2,
               }}
             >
               <Table size="small">
@@ -183,7 +193,6 @@ const MainPage = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {/* Example Rows */}
                   <TableRow>
                     <TableCell>Data 1</TableCell>
                     <TableCell>Data 2</TableCell>
@@ -198,9 +207,24 @@ const MainPage = () => {
               </Table>
             </Box>
           )}
+          {file && (
+            <Button
+              variant="contained"
+              onClick={handleRemoveDuplicates}
+              sx={{
+                backgroundColor: "#FFB74D",
+                color: "#FFFFFF",
+                fontWeight: "700",
+                width: "20%",
+                "&:hover": { backgroundColor: "#FFA726" },
+              }}
+            >
+              Remove Duplicates
+            </Button>
+          )}
         </Box>
 
-        {/* Right: Choose Visualization and Ranges */}
+        {/* Right: Visualization Selection */}
         <Box
           sx={{
             flex: 1,
@@ -215,7 +239,7 @@ const MainPage = () => {
               sx={{
                 fontSize: "1.2rem",
                 fontWeight: "600",
-                color: "#4C3C3D",
+                color: "#4E342E",
                 marginBottom: 2,
               }}
             >
@@ -239,12 +263,12 @@ const MainPage = () => {
                       flexDirection: "column",
                       alignItems: "center",
                       gap: 1,
-                      backgroundColor: selectedVisualization === option.label ? "#FFD700" : "#FFF",
-                      color: selectedVisualization === option.label ? "#4C3C3D" : "#4C3C3D",
+                      backgroundColor: selectedVisualization === option.label ? "#FFB74D" : "#FFF",
+                      color: "#4E342E",
                       fontWeight: "600",
                       borderRadius: "12px",
                       "&:hover": {
-                        backgroundColor: "#FFC000",
+                        backgroundColor: "#FFF3E0",
                       },
                     }}
                   >
@@ -262,7 +286,7 @@ const MainPage = () => {
               sx={{
                 fontSize: "1.2rem",
                 fontWeight: "600",
-                color: "#4C3C3D",
+                color: "#4E342E",
                 marginBottom: 2,
               }}
             >
@@ -304,15 +328,15 @@ const MainPage = () => {
           {/* Unleash Data Button */}
           <Button
             variant="contained"
-            sx={{
-              backgroundColor: "#FFD700",
-              color: "#4C3C3D",
-              fontWeight: "700",
-              fontSize: "1rem",
-              "&:hover": { backgroundColor: "#FFC000" },
-            }}
             onClick={handleUnleashClick}
             disabled={!selectedVisualization || !file || !selectedRangeX || !selectedRangeY}
+            sx={{
+              backgroundColor: "#FFB74D",
+              color: "#FFFFFF",
+              fontWeight: "700",
+              fontSize: "1rem",
+              "&:hover": { backgroundColor: "#FFF3E0" },
+            }}
           >
             Unleash Data
           </Button>
@@ -322,4 +346,4 @@ const MainPage = () => {
   );
 };
 
-export default MainPage;
+export default DataPreparationPage;
