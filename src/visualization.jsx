@@ -162,75 +162,77 @@ export default function VisualizationPage() {
 
 
   case "Line Graph":
-    if (rangeX === "All Columns") {
-      const selectedData = [];
-  
-      for (let i = 0; i < columns.length; i++) {
-        const columnType = columns[i];                                                // Get the current column (key)
-  
-                                                                                       // Accumulate the sum for the current column
-        const columnSum = dataValue.reduce((acc, result) => {
-          let value = result[columnType];
-  
-                                                                                        // Coerce value to a number if it’s a string
-          value = Number(value);                                                        // Convert to number (will be NaN if invalid)
-  
-                                                                                        // Check if the value is a valid number
-          if (!isNaN(value)) {
-            return acc + value;
-          }
-  
-          return acc;                                                                    // Ignore non-numeric values
-        }, 0);                                                                          // Initial value of accumulator is 0
-  
-                                                                                        // Push the accumulated sum for the column to selectedData
-        selectedData.push(columnSum);
-      }
-  
-                                                                                        // Log final selectedData before updating the chart
-      console.log("Selected Data for All Columns (Line Graph):", selectedData);
-  
-      setChartData((prev) => ({
-        labels: columns,                                                                // Labels for the columns
-        datasets: [
-          {
-            label: `Summed Data for All Columns (Line Graph)`,                          // Label for the dataset
-            data: selectedData,                                                          // Use selectedData here
-            borderColor: "rgba(75, 192, 192, 1)",
-            borderWidth: 2,
-            fill: false,                                                                 // No area fill for Line Graph
+  if (rangeX && rangeY) {
+    const selectedData = dataValue
+      .filter(
+        (result) =>
+          result[rangeX] !== undefined &&
+          result[rangeX] !== null &&
+          result[rangeX] !== "" &&
+          result[rangeY] !== undefined &&
+          result[rangeY] !== null &&
+          result[rangeY] !== ""
+      ) // Filter out rows where rangeX or rangeY values are invalid
+      .map((result) => ({
+        x: Number(result[rangeX]), // Ensure x values are numbers
+        y: Number(result[rangeY]), // Ensure y values are numbers
+      }))
+      .filter((point) => !isNaN(point.x) && !isNaN(point.y)); // Remove rows with non-numeric x or y values
+
+    const labels = selectedData.map((_, index) => index); // Create labels for the points based on their index
+
+    setChartData((prev) => ({
+      labels, // Labels for x-axis data points (e.g., indices or time)
+      datasets: [
+        {
+          label: `${rangeX} vs ${rangeY} Line Graph`, // Dataset label shown in the chart legend
+          data: selectedData.map((point) => point.y), // y-axis values
+          borderColor: "rgba(75, 192, 192, 1)", // Line color
+          borderWidth: 2, // Thickness of the line
+          fill: false, // Disable area fill under the line
+        },
+      ],
+      options: {
+        responsive: true, // Ensure the chart resizes correctly
+        plugins: {
+          legend: {
+            display: true, // Show the legend
+            position: "top", // Position of the legend
           },
-        ],
-      }));
-    } else {
-      const selectedData = dataValue
-        .filter(
-          (result) =>
-            result[rangeX] !== undefined &&
-            result[rangeX] !== null &&
-            result[rangeX] !== ""
-        )                                                                              // Filter out empty values
-        .map((result) => result[rangeX]);                                               // Map to extract the rangeX values
-  
-      const labelData = [];
-      for (let i = 0; i < selectedData.length; i++) {
-        labelData.push(i);
-      }
-  
-      setChartData((prev) => ({
-        labels: labelData,                                                            // Labels for x-axis (row indices or generated labels)
-        datasets: [
-          {
-            label: `${rangeX} Line Graph`,                                            // Label for the dataset
-            data: selectedData,                                                       // Example data
-            borderColor: "rgba(75, 192, 192, 1)",
-            borderWidth: 2,
-            fill: false,                                                               // No area fill for Line Graph
+          title: {
+            display: true,
+            text: `${rangeX} vs ${rangeY}`, // Title of the chart
           },
-        ],
-      }));
-    }
-    break;
+        },
+        scales: {
+          x: {
+            title: {
+              display: true, // Enable the x-axis title
+              text: rangeX, // Use rangeX as the x-axis label
+              font: {
+                size: 14, // Font size for the label
+              },
+            },
+          },
+          y: {
+            title: {
+              display: true, // Enable the y-axis title
+              text: rangeY, // Use rangeY as the y-axis label
+              font: {
+                size: 14, // Font size for the label
+              },
+            },
+          },
+        },
+      },
+    }));
+    
+    
+  } else {
+    console.error("Both rangeX and rangeY must be selected");
+  }
+  break;
+
   
 
 
