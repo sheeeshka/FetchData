@@ -8,6 +8,7 @@ const App = () => {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/landingpage" element={<LandingPage />} />
         <Route path="/datapreparation" element={<DataPreparationPage />} />
         <Route path="/visualization" element={<VisualizationPage />} />
