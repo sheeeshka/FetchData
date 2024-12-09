@@ -1,3 +1,5 @@
+// IMPORTS
+// =========================================================================
 import React, { useState } from "react";
 import {
   Box,
@@ -18,28 +20,102 @@ import ShowChartIcon from "@mui/icons-material/ShowChart";
 import RadarIcon from "@mui/icons-material/Radar";
 import PieChartIcon from "@mui/icons-material/PieChart";
 import ScatterPlotIcon from "@mui/icons-material/ScatterPlot";
+import Papa from 'papaparse';
+
+//=======================================================================
+
 
 const DataPreparationPage = () => {
   const navigate = useNavigate();
   const [selectedVisualization, setSelectedVisualization] = useState("");
   const [file, setFile] = useState(null);
-  const [csvHeaders, setCsvHeaders] = useState([]);
   const [selectedRangeX, setSelectedRangeX] = useState("");
-  const [selectedRangeY, setSelectedRangeY] = useState("");
-
+  const [data, setData] = useState();
+  const [columnArray, setColumn] = useState([""]);
+  const [values, setValues] = useState([]);
+ 
+ 
   const handleFileUpload = (e) => {
     const uploadedFile = e.target.files[0];
+
+    Papa.parse(uploadedFile, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function (result) {
+            const cleanedData = result.data.map((row) => {
+                const cleanedRow = {};
+                Object.keys(row).forEach((key) => {
+                    if (row[key]?.trim()) { 
+                        cleanedRow[key] = row[key];
+                    }
+                });
+                return cleanedRow;
+            });
+
+            const columnArray = Object.keys(cleanedData[0] || {}); 
+            const valuesArray = cleanedData.map((d) => Object.values(d)); 
+
+          
+            setData(cleanedData); 
+            setColumn(columnArray);
+            setValues(valuesArray);
+        },
+    });
+
     setFile(uploadedFile);
+};
 
-    // Simulate parsing CSV headers (replace with actual CSV parsing logic)
-    const headers = ["Column 1", "Column 2", "Column 3"];
-    setCsvHeaders(headers);
-  };
+const handleRemoveDuplicates = () => {
+  if (!data || data.length === 0) {
+    console.warn("No data available to process.");
+    return;
+  }
 
-  const handleRemoveDuplicates = () => {
-    // Placeholder for removing duplicates logic
-    alert("Duplicates removed successfully!");
-  };
+
+  const normalizedData = data.map((row) =>
+    Object.fromEntries(
+      Object.entries(row).map(([key, value]) => [
+        key,
+        value ? value.trim().replace(/\s+/g, " ") : "", 
+      ])
+    )
+  );
+
+  const uniqueData = Array.from(
+    new Map(
+      normalizedData.map((row) => [JSON.stringify(row), row]) 
+    ).values()
+  );
+
+  const cleanedData = uniqueData.map((row, index) => {
+    if (index === 0) return row; 
+
+    
+    return Object.fromEntries(
+      Object.entries(row).map(([key, value]) => [
+        key,
+        isNaN(value) || value === "" ? null : value, 
+      ])
+    );
+  });
+
+  const filteredData = cleanedData.filter(
+    (row, index) =>
+      index === 0 || Object.values(row).some((value) => value !== null)
+  );
+
+  const columnArray = Object.keys(filteredData[0] || {});
+  const valuesArray = filteredData.map((d) => Object.values(d));
+
+
+  setData(filteredData);
+  setColumn(columnArray);
+  setValues(valuesArray);
+};
+
+
+
+
 
   const handleUnleashClick = () => {
     navigate("/visualization", {
@@ -47,6 +123,8 @@ const DataPreparationPage = () => {
         visualizationType: selectedVisualization,
         rangeX: selectedRangeX,
         rangeY: selectedRangeY,
+        columns: columnArray,
+        dataValue: data,
       },
     });
   };
@@ -171,9 +249,19 @@ const DataPreparationPage = () => {
             }}
           >
             {file ? file.name : "Drag 'n' Drop or Click to Upload"}
-            <input type="file" hidden onChange={handleFileUpload} />
+            
+            <input 
+              type="file" 
+              hidden 
+              onChange={handleFileUpload} 
+              name="file"
+              accept=".csv"
+            />
+
           </Button>
+          
           {file && (
+            
             <Box
               sx={{
                 maxHeight: "200px",
@@ -184,31 +272,32 @@ const DataPreparationPage = () => {
                 marginBottom: 2,
               }}
             >
+
+              {/* TABLE FOR POPULATING DATA */}
               <Table size="small">
                 <TableHead>
                   <TableRow>
-                    {csvHeaders.map((header) => (
-                      <TableCell key={header}>{header}</TableCell>
+                    {columnArray.map((header, i) => (
+                      <TableCell key={i}>{header}</TableCell>
                     ))}
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  <TableRow>
-                    <TableCell>Data 1</TableCell>
-                    <TableCell>Data 2</TableCell>
-                    <TableCell>Data 3</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell>Data A</TableCell>
-                    <TableCell>Data B</TableCell>
-                    <TableCell>Data C</TableCell>
-                  </TableRow>
+                  {values.map((v, i) => (
+                    <TableRow key = {i}>
+                      {v.map((value, i) => (
+                        <TableCell key = {i}>{value}</TableCell>
+                      ))}
+                    </TableRow>
+                  )
+                  )}
                 </TableBody>
               </Table>
             </Box>
           )}
           {file && (
             <Button
+  
               variant="contained"
               onClick={handleRemoveDuplicates}
               sx={{
@@ -292,44 +381,37 @@ const DataPreparationPage = () => {
             >
               Choose Ranges:
             </Typography>
-            <TextField
-              select
-              label="X-Axis Range"
-              value={selectedRangeX}
-              onChange={(e) => setSelectedRangeX(e.target.value)}
-              fullWidth
-              SelectProps={{ native: true }}
-              sx={{ marginBottom: 2 }}
-            >
-              <option value="">Select Range X</option>
-              {csvHeaders.map((header) => (
-                <option key={header} value={header}>
-                  {header}
-                </option>
-              ))}
-            </TextField>
-            <TextField
-              select
-              label="Y-Axis Range"
-              value={selectedRangeY}
-              onChange={(e) => setSelectedRangeY(e.target.value)}
-              fullWidth
-              SelectProps={{ native: true }}
-            >
-              <option value="">Select Range Y</option>
-              {csvHeaders.map((header) => (
-                <option key={header} value={header}>
-                  {header}
-                </option>
-              ))}
-            </TextField>
+              { (selectedVisualization == "Line Graph" || selectedVisualization == "Bar Chart")  &&
+                <>
+  
+                    <TextField
+                      select
+                      label="Data Range"
+                      value={selectedRangeX}
+                      onChange={(e) => setSelectedRangeX(e.target.value)}
+                      fullWidth
+                      SelectProps={{ native: true }}
+                      sx={{ marginBottom: 2 }}
+                    >
+                      <option value="">Select Range</option>
+                        <option value="All Columns">All Columns</option> {/* Add the additional option here */}
+                        {columnArray.map((header) => (
+                          <option key={header} value={header}>
+                            {header}
+                          </option>
+                        ))}
+                    </TextField>
+                  
+                  
+                  </>
+                } 
           </Box>
 
           {/* Unleash Data Button */}
           <Button
             variant="contained"
             onClick={handleUnleashClick}
-            disabled={!selectedVisualization || !file || !selectedRangeX || !selectedRangeY}
+            disabled={!selectedVisualization || !file}
             sx={{
               backgroundColor: "#FFB74D",
               color: "#FFFFFF",

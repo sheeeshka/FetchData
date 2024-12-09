@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -15,9 +15,31 @@ import {
   PolarAreaController,
   Tooltip,
   Legend,
+  CategoryScale,
+  LinearScale,
+  Title,
+  PointElement,
+  RadialLinearScale,
+  ArcElement
 } from "chart.js";
-import { Bar, Line, Radar, Pie, PolarArea } from "react-chartjs-2";
+import { Bar, Line, Radar, Pie, PolarArea, Doughnut } from "react-chartjs-2";
 import logo from "./assets/logo.png"; 
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
+
+// Register the necessary chart components with ChartJS
+ChartJS.register(
+  BarElement,
+  LineElement,
+  RadarController,
+  PieController,
+  PolarAreaController,
+  Tooltip,
+  Legend,
+  CategoryScale,
+  LinearScale,
+  Title
+);
 
 ChartJS.register(
   BarElement,
@@ -26,59 +48,374 @@ ChartJS.register(
   PieController,
   PolarAreaController,
   Tooltip,
-  Legend
+  Legend,
+  CategoryScale,
+  LinearScale,
+  Title,
+  PointElement,
+  RadialLinearScale,
+  ArcElement,
+
 );
 
-const VisualizationPage = () => {
+export default function VisualizationPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [findings, setFindings] = useState("Summary of results will be displayed here...");
-
-  const { visualizationType, rangeX, rangeY } = location.state || {
+  
+  const { visualizationType, rangeX, rangeY, columns, dataValue } = location.state || {
     visualizationType: "",
     rangeX: "",
     rangeY: "",
+    columns: [],
+    dataValue: [],
   };
 
-  const data = {
-    labels: ["Sample 1", "Sample 2", "Sample 3", "Sample 4"],
+  const [chartData, setChartData] = useState({
+    labels: [],
+    datasets: [],
+  });
+
+  useEffect(() => {
+    handleGenerateGraph();
+  }, [visualizationType]);
+
+  const handleGenerateGraph = () => {
+
+    switch (visualizationType)
+    {
+      case "Bar Chart":
+        if (rangeX === "All Columns") {
+          const selectedData = [];
+        
+          for (let i = 0; i < columns.length; i++) {
+            const columnType = columns[i];                                         // Get the current column (key)
+        
+                                                                                     // Accumulate the sum for the current column
+            const columnSum = dataValue.reduce((acc, result) => {
+              let value = result[columnType];
+        
+                                                                                    // Coerce value to a number if it’s a string
+              value = Number(value);                                                // Convert to number (will be NaN if invalid)
+        
+                                                                                    // Check if the value is a valid number
+              if (!isNaN(value)) {
+                return acc + value;
+              }
+        
+              return acc;                                                            // Ignore non-numeric values
+            }, 0);                                                                    // Initial value of accumulator is 0
+        
+                                                                                      // Push the accumulated sum for the column to selectedData
+            selectedData.push(columnSum);
+          }
+        
+                                                                                      // Log final selectedData before updating the chart
+ 
+        
+          setChartData((prev) => ({
+            labels: columns,                                                            // Labels for the columns
+            datasets: [
+              {
+                label: `Summed Data for All Columns`,                                   // Label for the dataset
+                data: selectedData,                                                     // Use selectedData here
+                backgroundColor: "rgba(75, 192, 192, 0.2)",
+                borderColor: "rgba(75, 192, 192, 1)",
+                borderWidth: 1,
+              },
+            ],
+          }));
+        } 
+        
+        else 
+        {
+                const selectedData = dataValue
+                  .filter(
+                    (result) =>
+                      result[rangeX] !== undefined &&
+                      result[rangeX] !== null &&
+                      result[rangeX] !== ""
+                  )                                                                     // Filter out empty values
+                  .map((result) => result[rangeX]);                                     // Map to extract the rangeX values
+
+                const labelData = [];
+                for (let i = 0; i < selectedData.length; i++) {
+                  labelData.push(i);
+                }
+                setChartData((prev) => ({
+                  labels: labelData,                                                   // Example of updating labels
+                  datasets: [
+                    {
+                      label: `${rangeX} IYES Bar Graph`,
+                      data: selectedData,                                             // Example data
+                      backgroundColor: "rgba(75, 192, 192, 0.2)",
+                      borderColor: "rgba(75, 192, 192, 1)",
+                      borderWidth: 1,
+                    },
+                  ],
+                }));
+                console.log("data chart:" + dataChart);
+              }
+  break;
+
+
+  case "Line Graph":
+    if (rangeX === "All Columns") {
+      const selectedData = [];
+  
+      for (let i = 0; i < columns.length; i++) {
+        const columnType = columns[i];                                                // Get the current column (key)
+  
+                                                                                       // Accumulate the sum for the current column
+        const columnSum = dataValue.reduce((acc, result) => {
+          let value = result[columnType];
+  
+                                                                                        // Coerce value to a number if it’s a string
+          value = Number(value);                                                        // Convert to number (will be NaN if invalid)
+  
+                                                                                        // Check if the value is a valid number
+          if (!isNaN(value)) {
+            return acc + value;
+          }
+  
+          return acc;                                                                    // Ignore non-numeric values
+        }, 0);                                                                          // Initial value of accumulator is 0
+  
+                                                                                        // Push the accumulated sum for the column to selectedData
+        selectedData.push(columnSum);
+      }
+  
+                                                                                        // Log final selectedData before updating the chart
+      console.log("Selected Data for All Columns (Line Graph):", selectedData);
+  
+      setChartData((prev) => ({
+        labels: columns,                                                                // Labels for the columns
+        datasets: [
+          {
+            label: `Summed Data for All Columns (Line Graph)`,                          // Label for the dataset
+            data: selectedData,                                                          // Use selectedData here
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 2,
+            fill: false,                                                                 // No area fill for Line Graph
+          },
+        ],
+      }));
+    } else {
+      const selectedData = dataValue
+        .filter(
+          (result) =>
+            result[rangeX] !== undefined &&
+            result[rangeX] !== null &&
+            result[rangeX] !== ""
+        )                                                                              // Filter out empty values
+        .map((result) => result[rangeX]);                                               // Map to extract the rangeX values
+  
+      const labelData = [];
+      for (let i = 0; i < selectedData.length; i++) {
+        labelData.push(i);
+      }
+  
+      setChartData((prev) => ({
+        labels: labelData,                                                            // Labels for x-axis (row indices or generated labels)
+        datasets: [
+          {
+            label: `${rangeX} Line Graph`,                                            // Label for the dataset
+            data: selectedData,                                                       // Example data
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 2,
+            fill: false,                                                               // No area fill for Line Graph
+          },
+        ],
+      }));
+    }
+    break;
+  
+
+
+      case "Radar Chart":
+  const selectedDataRadar = [];
+  
+                                                                                         // Loop through each column
+  for (let i = 0; i < columns.length; i++) {
+    const columnType = columns[i];                                                       // Get the current column (key)
+
+                                                                                        // Accumulate the sum for the current column (key)
+    const radarSingleData = dataValue.reduce((acc, result) => {
+      const value = result[columnType];                                                 // Access the value of result using the columnType key
+      
+
+                                                                                        // Ensure the value is a number before adding to the accumulator
+      if (typeof value === 'number') {
+        return acc + value;
+      } else if (!isNaN(Number(value))) {
+                                                                                        // If the value is a string that represents a number, convert it
+        return acc + Number(value);
+      }
+
+      return acc;                                                                       // Ignore non-numeric values
+    }, 0);                                                                              // Initial value of accumulator is 0
+    
+                                                                                        // Push the accumulated sum for the column to selectedDataRadar
+    selectedDataRadar.push(radarSingleData);
+  }
+  setChartData((prev) => ({
+    labels: columns,                                                                    // Labels for the Radar chart
     datasets: [
       {
-        label: `${rangeY} (Y-Axis)`,
-        data: [10, 20, 30, 40], // Replace with actual data
-        backgroundColor: ["#FFB74D", "#FFA726", "#F44336", "#FF7043"],
-        borderColor: "#4E342E",
+        label: `Radar Chart`,                                                             // Label for the dataset
+        data: selectedDataRadar,                                                        // Use selectedDataRadar here instead of selectedData
+        backgroundColor: "rgba(75, 192, 192, 0.2)",                                     // Example background color
+        borderColor: "rgba(75, 192, 192, 1)",                                            // Example border color
         borderWidth: 1,
       },
     ],
-  };
+  }));
+  break;
+
+  case "Polar Area Chart":
+  const selectedDataPolar = [];
+  
+  for (let i = 0; i < columns.length; i++) {
+    const columnType = columns[i];                                                    // Get the current column (key)
+    
+                                                                                      // Accumulate the sum for the current column
+    const polarSingleData = dataValue.reduce((acc, result) => {
+      let value = result[columnType];
+
+
+                                                                                      // Coerce value to a number if it’s a string
+      value = Number(value);                                                           // Convert to number (will be NaN if invalid)
+
+                                                                                      // Check if the value is a valid number
+      if (!isNaN(value)) {
+        return acc + value;
+      }
+      
+
+      return acc;                                                                       // Ignore non-numeric values
+    }, 0);                                                                        // Initial value of accumulator is 0
+    
+    
+                                                                                        // Push the accumulated sum for the column to selectedDataPolar
+    selectedDataPolar.push(polarSingleData);
+  }
+
+ 
+  setChartData((prev) => ({
+    labels: columns,                                                                    // Labels for the Polar Area chart
+    datasets: [
+      {
+        label: `Polar Area Chart`,                                                        // Label for the dataset
+        data: selectedDataPolar,                                                          // Use selectedDataPolar here
+        backgroundColor: [
+          "rgba(75, 192, 192, 0.2)", "rgba(153, 102, 255, 0.2)", "rgba(255, 159, 64, 0.2)",
+          "rgba(54, 162, 235, 0.2)", "rgba(255, 99, 132, 0.2)", "rgba(255, 205, 86, 0.2)"
+        ],                                                                              // Example background colors for the sections
+        borderColor: [
+          "rgba(75, 192, 192, 1)", "rgba(153, 102, 255, 1)", "rgba(255, 159, 64, 1)",
+          "rgba(54, 162, 235, 1)", "rgba(255, 99, 132, 1)", "rgba(255, 205, 86, 1)"
+        ],                                                                                              // Example border colors
+        borderWidth: 1,
+      },
+    ],
+  }));
+  break;
+
+
+  case "Pie Chart":
+    const selectedDataPie = [];
+    
+    for (let i = 0; i < columns.length; i++) {
+      const columnType = columns[i];                                                        // Get the current column (key)
+      
+                                                                                            // Accumulate the sum for the current column
+      const pieSingleData = dataValue.reduce((acc, result) => {
+        let value = result[columnType];
+
+                                                                                             // Coerce value to a number if it’s a string
+        value = Number(value);                                                                // Convert to number (will be NaN if invalid)
+  
+                                                                                              // Check if the value is a valid number
+        if (!isNaN(value)) {
+          return acc + value;
+        }
+
+        return acc;                                                                            // Ignore non-numeric values
+      }, 0);                                                                                  // Initial value of accumulator is 0
+      
+                                                                                              // Push the accumulated sum for the column to selectedDataPie
+      selectedDataPie.push(pieSingleData);
+    }
+  
+    setChartData((prev) => ({
+      labels: columns,                                                                       // Labels for the Pie chart
+      datasets: [
+        {
+          label: `Pie Chart`,                                                                 // Label for the dataset
+          data: selectedDataPie,                                                              // Use selectedDataPie here
+          backgroundColor: [
+            "rgba(75, 192, 192, 0.2)", "rgba(153, 102, 255, 0.2)", "rgba(255, 159, 64, 0.2)",
+            "rgba(54, 162, 235, 0.2)", "rgba(255, 99, 132, 0.2)", "rgba(255, 205, 86, 0.2)"
+          ],                                                                                  // Example background colors for the sections
+          borderColor: [
+            "rgba(75, 192, 192, 1)", "rgba(153, 102, 255, 1)", "rgba(255, 159, 64, 1)",
+            "rgba(54, 162, 235, 1)", "rgba(255, 99, 132, 1)", "rgba(255, 205, 86, 1)"
+          ],                                                                                          // Example border colors
+          borderWidth: 1,
+        },
+      ],
+    }));
+    break;
+  
+      default:
+      alert("ERROR: Invalid Chart Type!");
+      break;
+    }
+  }
 
   const handleGenerateReport = () => {
-    console.log("Generating report with title:", title);
-    console.log("Chart description:", description);
-    console.log("Findings:", findings);
+    const pdf = new jsPDF();
+  
+                                                                                                    // Capture the title and add to PDF as centered, bold, and bigger font
+    const titleText = title || '';                                                                 // Using the title state value directly
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(24);                                                                            // Larger font size for the title
+    const titleWidth = pdf.getTextWidth(titleText);                                               // Get the width of the title
+    pdf.text(titleText, (pdf.internal.pageSize.width - titleWidth) / 2, 20);                        // Centered title
+    pdf.setFont('helvetica', 'normal');                                                             // Reset to normal font for other text
+  
+                                                                                                   // Capture the description and add to PDF with normal size font
+    const descriptionElement = document.getElementById("makeDescription");
+    const descriptionText = descriptionElement ? descriptionElement.innerText || descriptionElement.textContent : '';
+    pdf.setFontSize(12);                                                                                        // Normal font size for description
+    pdf.setFont('helvetica', 'bold');                                                                             // Bold "Description"
+    pdf.text("Description", 10, 40);                                                                            // Add "Description" heading
+    pdf.setFont('helvetica', 'normal');                                                                        // Reset to normal font for the description text
+    pdf.text(descriptionText, 10, 50);                                                                             // Position of description text
+  
+                                                                                                                  // Capture the chart and add to PDF as image
+    const chartElement = document.getElementById("chart");
+    html2canvas(chartElement).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
+      pdf.addImage(imgData, "PNG", 10, 60, 180, 160);                                                                 // Customize position and size for chart
+  
+                                                                                                                  // Capture the findings and add to PDF below the chart
+      const findingsElement = document.getElementById("makeFindings");
+      const findingsText = findingsElement ? findingsElement.innerText || findingsElement.textContent : '';
+      pdf.setFontSize(12);                                                                                          // Normal font size for findings
+      pdf.setFont('helvetica', 'bold');                                                                              // Bold "Findings"
+      pdf.text("Findings", 10, 230);                                                                                // Add "Findings" heading
+      pdf.setFont('helvetica', 'normal');                                                                           // Reset to normal font for the findings text
+      pdf.text(findingsText, 10, 240);                                                                              // Position findings below the chart
+  
+                                                                                                                    // Save the PDF
+      pdf.save(`${title}.pdf`);
+    });
   };
-
-  const renderChart = () => {
-    switch (visualizationType) {
-      case "Bar Chart":
-        return <Bar data={data} />;
-      case "Line Graph":
-        return <Line data={data} />;
-      case "Radar Chart":
-        return <Radar data={data} />;
-      case "Pie Chart":
-        return <Pie data={data} />;
-      case "Polar Area Chart":
-        return <PolarArea data={data} />;
-      default:
-        return <Typography>Select a visualization type</Typography>;
-    }
-  };
-
+  
   return (
     <Box
       sx={{
@@ -181,6 +518,7 @@ const VisualizationPage = () => {
             Chart Preview
           </Typography>
           <Box
+            id="chart"
             sx={{
               height: "300px",
               display: "flex",
@@ -188,7 +526,18 @@ const VisualizationPage = () => {
               justifyContent: "center",
             }}
           >
-            {renderChart()}
+    
+            {chartData && chartData.labels && chartData.labels.length > 0 ? (
+              {
+                "Bar Chart": <Bar data={chartData} />,
+                "Line Graph": <Line data={chartData} />,
+                "Radar Chart": <Radar data={chartData} />,
+                "Polar Area Chart": <PolarArea data={chartData} />,
+                "Pie Chart": <Pie data={chartData} />,
+              }[visualizationType]
+            ) : (
+              <Typography>No chart data available!</Typography>
+            )}
           </Box>
         </Box>
 
@@ -205,6 +554,7 @@ const VisualizationPage = () => {
           <TextField
             label="Add Chart Title"
             value={title}
+            id="makeTitle"
             onChange={(e) => setTitle(e.target.value)}
             fullWidth
             variant="outlined"
@@ -218,6 +568,7 @@ const VisualizationPage = () => {
           <TextField
             label="Add Chart Description"
             value={description}
+            id="makeDescription"
             onChange={(e) => setDescription(e.target.value)}
             fullWidth
             multiline
@@ -250,6 +601,7 @@ const VisualizationPage = () => {
             </Typography>
             <TextField
               value={findings}
+              id="makeFindings"
               onChange={(e) => setFindings(e.target.value)}
               fullWidth
               multiline
@@ -293,6 +645,4 @@ const VisualizationPage = () => {
       </Box>
     </Box>
   );
-};
-
-export default VisualizationPage;
+}
