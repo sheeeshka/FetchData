@@ -87,22 +87,9 @@ const handleRemoveDuplicates = () => {
     ).values()
   );
 
-  const cleanedData = uniqueData.map((row, index) => {
-    if (index === 0) return row; 
+  const cleanedData = uniqueData.map((row) => row);
 
-    
-    return Object.fromEntries(
-      Object.entries(row).map(([key, value]) => [
-        key,
-        isNaN(value) || value === "" ? null : value, 
-      ])
-    );
-  });
-
-  const filteredData = cleanedData.filter(
-    (row, index) =>
-      index === 0 || Object.values(row).some((value) => value !== null)
-  );
+  const filteredData = cleanedData;
 
   const columnArray = Object.keys(filteredData[0] || {});
   const valuesArray = filteredData.map((d) => Object.values(d));
