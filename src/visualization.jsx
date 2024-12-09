@@ -157,7 +157,6 @@ export default function VisualizationPage() {
                     },
                   ],
                 }));
-                console.log("data chart:" + dataChart);
               }
   break;
 
