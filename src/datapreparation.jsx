@@ -109,7 +109,6 @@ const handleRemoveDuplicates = () => {
       state: {
         visualizationType: selectedVisualization,
         rangeX: selectedRangeX,
-        rangeY: selectedRangeY,
         columns: columnArray,
         dataValue: data,
       },
